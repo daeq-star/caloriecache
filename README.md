@@ -24,7 +24,7 @@ Tracked stores:
 - Nutrient Survival (nutrientsurvival.com)
 - Peak Refuel (peakrefuel.com)
 
-A kit is ranked only when the store published both a positive price and a single calorie total (or calories per day, which is marked **est.**). Kits we could not verify are listed separately and are not ranked. A **calorie check** badge means the calories-per-pound (or per serving) look physically off. Those kits stay on the board so the odd figure is visible.
+A kit is ranked only when the store published both a positive price and a single calorie total (or calories per day, which is marked **est.**). When a longer kit is priced as a whole number of a shorter kit that states a calorie total, the estimate is that multiple of the stated total. A 1-year kit priced as 12 of the 30-day kit uses 12 × the 30-day total. Kits we could not verify are listed separately and are not ranked. A **calorie check** badge means the calories-per-pound (or per serving) look physically off. Those kits stay on the board so the odd figure is visible.
 
 Prices and stock come from each store’s public Shopify product endpoint (`/products/<handle>.js`, which includes whether the variant is available; price is in cents). `/products/<handle>.json` is the fallback for the dollar price. The product HTML is a last resort. Calorie text is quoted on the kit page. Nothing here is invented to fill a gap. Affiliate URLs are empty.
 

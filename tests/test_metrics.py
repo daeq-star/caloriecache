@@ -14,7 +14,7 @@ from common import (  # noqa: E402
     price_per_2000_kcal,
     upsert_history,
 )
-from extract import days_from_title, extract_nutrition  # noqa: E402
+from extract import apply_stated_multiples, days_from_title, extract_nutrition, named_months  # noqa: E402
 
 
 class MetricsTest(unittest.TestCase):
@@ -171,6 +171,145 @@ class ExtractTest(unittest.TestCase):
         self.assertEqual(parsed["total_calories"], 10000)
         self.assertIn("servings × kcal/serving", parsed["calorie_method"])
         self.assertFalse(parsed["calorie_is_estimate"])
+
+
+def _kit(**overrides):
+    kit = {
+        "brand": "Emergency Essentials",
+        "store_domain": "beprepared.com",
+        "name": "Kit",
+        "price": 151.99,
+        "total_calories": 56650,
+        "calorie_is_estimate": False,
+        "calorie_method": "total calories stated on the product page",
+        "calorie_source_quote": "56,650 (1,888 daily calories)",
+        "advertised_days": 30,
+        "advertised_days_basis": "title: 30-Day → 30 days",
+        "exclude_from_ranking": False,
+        "servings": None,
+        "kcal_per_serving_basis": "",
+    }
+    kit.update(overrides)
+    return kit
+
+
+class StatedMultipleTest(unittest.TestCase):
+    def test_named_year_is_twelve_months(self):
+        self.assertEqual(named_months(_kit(name="NEW 1-Month (30-Day) Emergency Food Kit")), 1)
+        self.assertEqual(
+            named_months(_kit(
+                name="NEW 3-Month Emergency Food Kit",
+                advertised_days=90,
+                advertised_days_basis="title: 3-Month → 90 days (30 days per named month)",
+            )),
+            3,
+        )
+        self.assertEqual(
+            named_months(_kit(
+                name="NEW 1 Year Emergency Food Kit",
+                advertised_days=365,
+                advertised_days_basis="title: 1 Year → 365 days",
+            )),
+            12,
+        )
+        self.assertIsNone(named_months(_kit(name="2-Week True Survival Food Kit", advertised_days=14, advertised_days_basis="title: 2-Week → 14 days")))
+
+    def test_year_uses_twelve_times_the_stated_month_total(self):
+        month = _kit(name="NEW 1-Month (30-Day) Emergency Food Kit - Emergency Essentials")
+        three = _kit(
+            name="NEW 3-Month Emergency Food Kit - Emergency Essentials",
+            advertised_days=90,
+            advertised_days_basis="title: 3-Month → 90 days (30 days per named month)",
+            price=455.97,
+            total_calories=1888 * 90,
+            calorie_is_estimate=True,
+            calorie_method="est. 1888 kcal/day × 90 advertised days",
+            calorie_source_quote="1,888 calories per day. Multiplied by advertised length (title: 3-Month → 90 days).",
+        )
+        six = _kit(
+            name="NEW 6-Month Emergency Food Kit - Emergency Essentials",
+            advertised_days=180,
+            advertised_days_basis="title: 6-Month → 180 days (30 days per named month)",
+            price=911.94,
+            total_calories=1888 * 180,
+            calorie_is_estimate=True,
+            calorie_method="est. 1888 kcal/day × 180 advertised days",
+            calorie_source_quote="1,888 calories per day. Multiplied by advertised length (title: 6-Month → 180 days).",
+        )
+        year = _kit(
+            name="NEW 1 Year Emergency Food Kit - Emergency Essentials",
+            advertised_days=365,
+            advertised_days_basis="title: 1 Year → 365 days",
+            price=1823.88,
+            total_calories=1888 * 365,
+            calorie_is_estimate=True,
+            calorie_method="est. 1888 kcal/day × 365 advertised days",
+            calorie_source_quote="With 1,888 calories and 45 grams of protein per day. Multiplied by advertised length (title: 1 Year → 365 days).",
+        )
+        other = _kit(
+            name="2-Week True Survival Food Kit",
+            advertised_days=14,
+            advertised_days_basis="title: 2-Week → 14 days",
+            price=309.90,
+            total_calories=31155,
+            calorie_source_quote="Total Calories 31,155",
+        )
+        kits = [month, three, six, year, other]
+        apply_stated_multiples(kits)
+        apply_stated_multiples(kits)
+        self.assertEqual(month["total_calories"], 56650)
+        self.assertFalse(month["calorie_is_estimate"])
+        self.assertEqual(other["total_calories"], 31155)
+        self.assertEqual(three["total_calories"], 56650 * 3)
+        self.assertEqual(six["total_calories"], 56650 * 6)
+        self.assertEqual(year["total_calories"], 56650 * 12)
+        self.assertTrue(year["calorie_is_estimate"])
+        self.assertIn("12 × 56,650", year["calorie_method"])
+        self.assertIn("NEW 1-Month (30-Day)", year["calorie_method"])
+        self.assertIn("56,650 (1,888 daily calories)", year["calorie_source_quote"])
+        self.assertIn("1,888 calories and 45 grams of protein per day", year["calorie_source_quote"])
+
+    def test_another_estimate_is_not_a_base_total(self):
+        month = _kit(
+            brand="Mountain House",
+            store_domain="mountainhouse.com",
+            name="30-Day Emergency Food Supply Kit",
+            price=939.99,
+            total_calories=1732 * 30,
+            calorie_is_estimate=True,
+            calorie_method="est. 1732 kcal/day × 30 advertised days",
+            calorie_source_quote="approximately 1,732 calories per day",
+        )
+        year = _kit(
+            brand="Mountain House",
+            store_domain="mountainhouse.com",
+            name="1-Year Emergency Food Supply",
+            advertised_days=365,
+            advertised_days_basis="title: 1-Year → 365 days",
+            price=round(939.99 * 12, 2),
+            total_calories=1732 * 365,
+            calorie_is_estimate=True,
+            calorie_method="est. 1732 kcal/day × 365 advertised days",
+            calorie_source_quote="approximately 1,732 calories per day",
+        )
+        apply_stated_multiples([month, year])
+        self.assertEqual(year["total_calories"], 1732 * 365)
+        self.assertIn("kcal/day", year["calorie_method"])
+
+    def test_mismatched_price_does_not_copy_the_smaller_total(self):
+        month = _kit(name="30-Day Kit")
+        year = _kit(
+            name="1 Year Kit",
+            advertised_days=365,
+            advertised_days_basis="title: 1 Year → 365 days",
+            price=2000.00,
+            total_calories=1888 * 365,
+            calorie_is_estimate=True,
+            calorie_method="est. 1888 kcal/day × 365 advertised days",
+            calorie_source_quote="1,888 calories per day",
+        )
+        apply_stated_multiples([month, year])
+        self.assertEqual(year["total_calories"], 1888 * 365)
 
 
 if __name__ == "__main__":

@@ -484,3 +484,120 @@ def extract_nutrition(title: str, body_text: str, props: dict | None = None) -> 
         result["kcal_per_serving_basis"] = "stated"
 
     return result
+
+
+def named_months(kit: dict) -> int | None:
+    """Length in 30-day months. A named year is 12 months, which is 360 days.
+
+    Calendar length (365) is kept on ``advertised_days`` for the day-count
+    comparison. Bundle math uses months so a 1-year kit matches 12 × a 30-day kit.
+    """
+    days = kit.get("advertised_days")
+    if not isinstance(days, (int, float)) or days <= 0:
+        return None
+    days = int(days)
+    blob = f"{kit.get('advertised_days_basis') or ''} {kit.get('name') or ''}"
+    if re.search(r"\byears?\b", blob, re.I) and days % 365 == 0:
+        return (days // 365) * 12
+    if re.search(r"\bmonths?\b", blob, re.I) and days % 30 == 0:
+        return days // 30
+    if re.search(r"\b\d+\s*-?\s*days?\b", blob, re.I) and days >= 30 and days % 30 == 0:
+        return days // 30
+    return None
+
+
+def _is_daily_estimate(kit: dict) -> bool:
+    if not kit.get("calorie_is_estimate") or kit.get("exclude_from_ranking"):
+        return False
+    return "kcal/day" in (kit.get("calorie_method") or "")
+
+
+def _length_phrase(months: int, kit: dict) -> str:
+    blob = f"{kit.get('advertised_days_basis') or ''} {kit.get('name') or ''}"
+    if re.search(r"\byears?\b", blob, re.I):
+        years = months // 12
+        return "1-year" if years == 1 else f"{years}-year"
+    if months == 1:
+        if kit.get("advertised_days") == 30:
+            return "30-day"
+        return "1-month"
+    return f"{months}-month"
+
+
+def _money(value: float) -> str:
+    return f"${float(value):,.2f}"
+
+
+def apply_stated_multiples(kits: list[dict]) -> None:
+    """Replace a daily-calorie estimate when the kit is a priced multiple of a shorter kit.
+
+    The shorter kit must state a single calorie total. The longer kit's listed
+    price must be that same whole-number multiple, within 2%. A 1-year kit
+    priced as 12 × the 30-day kit then uses 12 × the stated 30-day total.
+    """
+    bases = []
+    for kit in kits:
+        months = named_months(kit)
+        if months is None or months < 1:
+            continue
+        if kit.get("calorie_is_estimate") or kit.get("exclude_from_ranking"):
+            continue
+        total = kit.get("total_calories")
+        price = kit.get("price")
+        if not total or total <= 0 or not price or price <= 0:
+            continue
+        if not (kit.get("calorie_source_quote") or "").strip():
+            continue
+        bases.append(kit)
+
+    for kit in kits:
+        if not _is_daily_estimate(kit):
+            continue
+        months = named_months(kit)
+        price = kit.get("price")
+        if months is None or not price or price <= 0:
+            continue
+        matches = []
+        for base in bases:
+            if base is kit or base.get("brand") != kit.get("brand"):
+                continue
+            if (
+                base.get("store_domain")
+                and kit.get("store_domain")
+                and base.get("store_domain") != kit.get("store_domain")
+            ):
+                continue
+            base_months = named_months(base)
+            if not base_months or months <= base_months or months % base_months != 0:
+                continue
+            multiple = months // base_months
+            expected = float(base["price"]) * multiple
+            if expected <= 0 or abs(float(price) - expected) / expected > 0.02:
+                continue
+            matches.append((base_months, multiple, base))
+        if not matches:
+            continue
+        matches.sort(key=lambda item: item[0], reverse=True)
+        if len(matches) > 1 and matches[0][0] == matches[1][0]:
+            continue
+        base_months, multiple, base = matches[0]
+        stated = int(round(float(base["total_calories"])))
+        total = stated * multiple
+        daily_quote = (kit.get("calorie_source_quote") or "").strip()
+        base_quote = (base.get("calorie_source_quote") or "").strip()
+        kit["total_calories"] = total
+        kit["calorie_is_estimate"] = True
+        kit["calorie_method"] = (
+            f"est. {multiple} × {stated:,} kcal, the stated total on “{base.get('name')}” "
+            f"({_length_phrase(months, kit)} = {multiple} × that {_length_phrase(base_months, base)} kit; "
+            f"listed price {_money(price)} = {multiple} × {_money(base['price'])})"
+        )
+        kit["calorie_source_quote"] = (
+            f"{base_quote} — stated total on {base.get('name')}. "
+            f"This listing is priced as {multiple} of that kit, so the calorie total is "
+            f"{multiple} × {stated:,} = {total:,}. "
+            f"This page’s own calorie line was: {daily_quote}"
+        )
+        servings = kit.get("servings")
+        if servings and str(kit.get("kcal_per_serving_basis") or "").startswith("computed"):
+            kit["kcal_per_serving"] = round(total / float(servings), 1)
