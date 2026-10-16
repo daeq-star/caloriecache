@@ -499,7 +499,8 @@ def build() -> None:
     <ol>
       <li><strong>A stated total.</strong> Lines such as “Total calories: 12,540” or the product’s structured-data field <code>calories_total</code>. The kit page quotes the line.</li>
       <li><strong>Servings × kcal per serving.</strong> Used when the page gives both and does not give a total. The method line says so.</li>
-      <li><strong>est.</strong> Used only when the page gives calories per day and the product name states a length (72-hour = 3 days, N-week = N × 7, N-month = N × 30, N-year = N × 365). The badge says est. A “2,000+ per day” claim is treated as a floor, so the price per calorie may look worse than it is.</li>
+      <li><strong>est.</strong> Used when the page gives calories per day and the product name states a length (72-hour = 3 days, N-week = N × 7, N-month = N × 30, N-year = N × 365). The badge says est. A “2,000+ per day” claim is treated as a floor, so the price per calorie may look worse than it is.</li>
+      <li><strong>est. from a smaller kit.</strong> When a longer kit’s listed price is a whole number of a shorter kit from the same store (within 2%), and that shorter kit states one calorie total, the estimate is that multiple of the stated total. A 1-year kit priced as 12 of the 30-day kit uses 12 × the 30-day total. The kit page names the shorter kit, the multiple, and the daily line from the longer kit’s own page.</li>
     </ol>
     <p>A generic sentence such as “an average adult needs 2,000 calories” is not the kit. If the page states two totals that disagree by more than 2 percent, or a range (“13,200 to 15,600”), the kit is not ranked. Pouch counts inside an ingredient list are not treated as the kit’s serving total.</p>
     <h2>Price</h2>

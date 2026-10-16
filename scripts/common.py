@@ -255,8 +255,14 @@ def load_document() -> dict:
 
 
 def save_document(doc: dict) -> None:
+    # Local import: extract does not import common, and this keeps every write
+    # on the same multiple-of-a-stated-total rule.
+    from extract import apply_stated_multiples
+
     DATA_DIR.mkdir(parents=True, exist_ok=True)
-    kits = [apply_metrics(dict(kit)) for kit in doc.get("kits", [])]
+    kits = [dict(kit) for kit in doc.get("kits", [])]
+    apply_stated_multiples(kits)
+    kits = [apply_metrics(kit) for kit in kits]
     kits.sort(key=lambda kit: (kit.get("brand") or "", kit.get("name") or "", kit.get("id") or ""))
     doc = dict(doc)
     doc["kits"] = [{key: kit.get(key) for key in KIT_KEYS} for kit in kits]
