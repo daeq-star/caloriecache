@@ -28,6 +28,10 @@ from common import (  # noqa: E402
 DIST = ROOT / "dist"
 SITE = ROOT / "site"
 NEWSLETTER = ROOT / "newsletter"
+BEEHIIV_FORM_ID = "c77e1947-6a0e-4c68-ae72-04eeb8c34698"
+BEEHIIV_LOADER = "https://subscribe-forms.beehiiv.com/v3/loader.js"
+BEEHIIV_ATTRIBUTION = "https://subscribe-forms.beehiiv.com/attribution.js"
+BEEHIIV_SUBSCRIBE_URL = "https://caloriecache.beehiiv.com/subscribe"
 
 
 def esc(value) -> str:
@@ -61,6 +65,15 @@ def shelf_text(value) -> str:
     if value is None or value == "":
         return "Not stated"
     return f"{int(value)} years"
+
+
+def signup_block() -> str:
+    """Beehiiv embed, with a plain link if the script does not run."""
+    return f"""<div class="signup">
+  <p>Get the weekly price drops and recall alerts.</p>
+  <script async src="{BEEHIIV_LOADER}" data-beehiiv-form="{BEEHIIV_FORM_ID}"></script>
+  <p><a href="{BEEHIIV_SUBSCRIBE_URL}">Subscribe</a></p>
+</div>"""
 
 
 def page(title: str, description: str, path: str, body: str, current: str, extra_head: str = "") -> str:
@@ -110,11 +123,13 @@ def page(title: str, description: str, path: str, body: str, current: str, extra
 </main>
 <footer>
   <div class="wrap">
+    {signup_block()}
     <p><strong>Affiliate disclosure.</strong> Product links go to the brand’s own store. The affiliate URL field on every kit is empty, so these are not paid placements. If that changes, the kit page will say so. Rankings follow listed price per 2,000 kcal and nothing else.</p>
     <p>2,000 kcal is a comparison yardstick used on food labels. It is not personal nutrition or medical advice. CalorieCache does not sell food.</p>
     <p>Prices and calorie claims are copied from official product pages. Check the linked page before you buy; stores change both.</p>
   </div>
 </footer>
+<script type="text/javascript" async src="{BEEHIIV_ATTRIBUTION}"></script>
 </body>
 </html>
 """
@@ -315,6 +330,7 @@ def build() -> None:
     home = f"""
     <h1>Emergency food, priced per 2,000 calories</h1>
     <p class="lede">Kits are sold by the bucket, the month, or the serving. Those labels are hard to compare. This page ranks food-storage kits from the brands’ own stores by listed price for 2,000 kcal, about one line on a nutrition label.</p>
+    {signup_block()}
     <p class="meta">Prices last updated {esc(updated)}.{stale_note} {len(verified)} kits have a price and a calorie figure. {len(unverified)} do not, and they are not ranked.</p>
     <form class="filters" action="{BASE_PATH}/">
       <label>Brand
@@ -588,21 +604,13 @@ def build() -> None:
     <h2>Latest</h2>
     <p><a href="{BASE_PATH}/newsletter/issue-001/">Issue 001 — Cheapest real calories this week</a></p>
     <h2>Get the next one</h2>
-    <div class="signup">
-      <p class="todo"><strong>TODO:</strong> connect an email provider. This form is a placeholder. It does not send, store, or subscribe anyone. Wire it to a provider you control (for example a hosted form endpoint) before turning the fields on.</p>
-      <form action="#" method="post">
-        <label>Email
-          <input type="email" name="email" placeholder="you@example.com" autocomplete="email" disabled>
-        </label>
-        <p><button type="submit" disabled>Subscribe</button></p>
-      </form>
-    </div>
+    {signup_block()}
     """
     write(
         DIST / "newsletter" / "index.html",
         page(
             "CalorieCache newsletter",
-            "A plain newsletter on emergency-food price per 2,000 kcal. The signup form is not connected yet.",
+            "Weekly price drops and recall alerts for emergency food ranked by price per 2,000 kcal.",
             "/newsletter/",
             newsletter,
             "newsletter",
