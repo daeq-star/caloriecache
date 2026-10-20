@@ -79,6 +79,6 @@ GitHub will not serve the site until Pages is pointed at Actions:
 
 If `main` is protected, allow `github-actions[bot]` to push the daily data commit, or the price history will not land.
 
-The newsletter form on `/newsletter/` is a placeholder. It does not send mail. Connect an email provider before enabling the fields. That work is marked TODO on the page.
+The newsletter signup is a [Beehiiv](https://caloriecache.beehiiv.com/subscribe) embed. `scripts/build_site.py` writes it near the top of the homepage, in the site footer, and on `/newsletter/`, plus the Beehiiv attribution script before `</body>`. A plain link to `https://caloriecache.beehiiv.com/subscribe` sits under the embed for anyone whose browser does not run the form. The daily rebuild keeps that markup.
 
 To add affiliate links later, put the URL in `affiliate_url` on that kit. The footer already says the field is empty and that rankings are not paid.

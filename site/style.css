@@ -190,14 +190,9 @@ blockquote {
 
 .chart { width: 100%; height: auto; background: white; border-radius: 8px; }
 
-.signup input { max-width: 22rem; }
+.signup { margin: 1rem 0 1.25rem; }
 
-.todo {
-  background: var(--amber-bg);
-  color: var(--amber);
-  border-radius: 8px;
-  padding: 0.7rem 0.8rem;
-}
+.signup p { margin: 0.35rem 0; }
 
 footer {
   border-top: 1px solid var(--line);
