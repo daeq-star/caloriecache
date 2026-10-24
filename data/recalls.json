@@ -1,52 +1,52 @@
 {
   "source": "https://api.fda.gov/food/enforcement.json",
-  "checked": "2026-10-23",
-  "window_start": "2025-10-23",
-  "window_end": "2026-10-23",
+  "checked": "2026-10-24",
+  "window_start": "2025-10-24",
+  "window_end": "2026-10-24",
   "queries": [
     {
       "brand": "Emergency Essentials",
-      "search": "report_date:[20251023 TO 20261023] AND (recalling_firm:\"Emergency Essentials\" OR product_description:\"Emergency Essentials\")"
+      "search": "report_date:[20251024 TO 20261024] AND (recalling_firm:\"Emergency Essentials\" OR product_description:\"Emergency Essentials\")"
     },
     {
       "brand": "Ready Hour",
-      "search": "report_date:[20251023 TO 20261023] AND (recalling_firm:\"Ready Hour\" OR product_description:\"Ready Hour\")"
+      "search": "report_date:[20251024 TO 20261024] AND (recalling_firm:\"Ready Hour\" OR product_description:\"Ready Hour\")"
     },
     {
       "brand": "ReadyWise",
-      "search": "report_date:[20251023 TO 20261023] AND (recalling_firm:\"ReadyWise\" OR product_description:\"ReadyWise\")"
+      "search": "report_date:[20251024 TO 20261024] AND (recalling_firm:\"ReadyWise\" OR product_description:\"ReadyWise\")"
     },
     {
       "brand": "Wise Company",
-      "search": "report_date:[20251023 TO 20261023] AND (recalling_firm:\"Wise Company\" OR product_description:\"Wise Company\")"
+      "search": "report_date:[20251024 TO 20261024] AND (recalling_firm:\"Wise Company\" OR product_description:\"Wise Company\")"
     },
     {
       "brand": "Augason Farms",
-      "search": "report_date:[20251023 TO 20261023] AND (recalling_firm:\"Augason\" OR product_description:\"Augason\")"
+      "search": "report_date:[20251024 TO 20261024] AND (recalling_firm:\"Augason\" OR product_description:\"Augason\")"
     },
     {
       "brand": "Mountain House",
-      "search": "report_date:[20251023 TO 20261023] AND (recalling_firm:\"Mountain House\" OR product_description:\"Mountain House\")"
+      "search": "report_date:[20251024 TO 20261024] AND (recalling_firm:\"Mountain House\" OR product_description:\"Mountain House\")"
     },
     {
       "brand": "Legacy Food Storage",
-      "search": "report_date:[20251023 TO 20261023] AND (recalling_firm:\"Legacy Food Storage\" OR product_description:\"Legacy Food Storage\")"
+      "search": "report_date:[20251024 TO 20261024] AND (recalling_firm:\"Legacy Food Storage\" OR product_description:\"Legacy Food Storage\")"
     },
     {
       "brand": "Valley Food Storage",
-      "search": "report_date:[20251023 TO 20261023] AND (recalling_firm:\"Valley Food Storage\" OR product_description:\"Valley Food Storage\")"
+      "search": "report_date:[20251024 TO 20261024] AND (recalling_firm:\"Valley Food Storage\" OR product_description:\"Valley Food Storage\")"
     },
     {
       "brand": "4Patriots",
-      "search": "report_date:[20251023 TO 20261023] AND (recalling_firm:\"4Patriots\" OR product_description:\"4Patriots\")"
+      "search": "report_date:[20251024 TO 20261024] AND (recalling_firm:\"4Patriots\" OR product_description:\"4Patriots\")"
     },
     {
       "brand": "Nutrient Survival",
-      "search": "report_date:[20251023 TO 20261023] AND (recalling_firm:\"Nutrient Survival\" OR product_description:\"Nutrient Survival\")"
+      "search": "report_date:[20251024 TO 20261024] AND (recalling_firm:\"Nutrient Survival\" OR product_description:\"Nutrient Survival\")"
     },
     {
       "brand": "Peak Refuel",
-      "search": "report_date:[20251023 TO 20261023] AND (recalling_firm:\"Peak Refuel\" OR product_description:\"Peak Refuel\")"
+      "search": "report_date:[20251024 TO 20261024] AND (recalling_firm:\"Peak Refuel\" OR product_description:\"Peak Refuel\")"
     }
   ],
   "errors": [],
